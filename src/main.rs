@@ -8,14 +8,23 @@ use std::io::{self, Read, Write};
 
 use crate::character::Kratos;
 
+
+fn grant_sword_of_chaos(kratos: &Kratos, weapons: &Vec<String>) -> Kratos {
+    let mut new_kratos: Kratos = kratos.clone();
+    for weapon in weapons {
+        new_kratos.weapon.push(weapon.to_string());
+    }
+    return new_kratos;
+}
+
 fn clear_terminal() {
     print!("\x1B[2J\x1B[1;1H");
     io::stdout().flush().unwrap();
 }
 
-fn get_child(node: &TreeNode) -> Option<&TreeNode> {
+fn get_child(node: &mut TreeNode) -> Option<&mut TreeNode> {
     if node.childen.len() == 1 {
-        Some(&node.childen[0])
+        Some(&mut node.childen[0])
     } else {
         None
     }
@@ -28,15 +37,16 @@ fn show_desicions(node: &TreeNode) {
 }
 
 fn main() {
-    let history_tree: history::TreeNode = return_history();
-    let mut current_node = &history_tree;
+    let mut history_tree: history::TreeNode = return_history();
+    let mut current_node = &mut history_tree;
     let next_line = "\n\n\nPress 'n' to continue.";
     let option_line = "\n\n\nWrite the option to continue.";
     let mut is_option_moment: bool;
-    let kratos = Kratos::new(Vec::new(), 10, Vec::new(),100);
+    let mut kratos = Kratos::new(Vec::new(), 10, Vec::new(),100);
     loop {
         clear_terminal();
         println!("{}", current_node.line);
+        kratos = current_node.action(grant_sword_of_chaos, &kratos);
         if current_node.decisions.len() > 1 {
             show_desicions(current_node);
             is_option_moment = true;
@@ -52,13 +62,13 @@ fn main() {
 
         if let Some(input) = read_key() {
             if input == '1' && is_option_moment {
-                current_node = &current_node.childen[0]
+                current_node = &mut current_node.childen[0]
             }
             if input == '2' && is_option_moment {
-                current_node = &current_node.childen[1]
+                current_node = &mut current_node.childen[1]
             }
             if input == 'n' && !is_option_moment {
-                if let Some(child_node) = get_child(&current_node) {
+                if let Some(child_node) = get_child(current_node) {
                     current_node = child_node;
                 } else {
                     break;
